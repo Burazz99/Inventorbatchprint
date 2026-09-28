@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>InventorBatchPrint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1720; --panel:#16273A; --panel-2:#1C3049; --line:#2A415C;
+    --cyan:#4FC3E0; --amber:#E8873D; --amber-dark:#C96F2C;
+    --text:#EDEFF2; --text-dim:#8FA3B8; --ok:#6FCF97;
+    box-sizing:border-box;
+  }
+  *{box-sizing:inherit; margin:0; padding:0;}
+  html{scroll-behavior:smooth; scroll-padding-top:24px;}
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif; line-height:1.5;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:48px 48px; background-position:-1px -1px;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+
+  header{padding:22px 0;}
+  .nav{display:flex; justify-content:space-between; align-items:center;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:600; font-size:1.05rem;}
+  .brand .dot{width:10px; height:10px; background:var(--cyan); border-radius:1px; transform:rotate(45deg);}
+  .navlink{color:var(--text-dim); text-decoration:none; font-size:.92rem; margin-left:22px;}
+  .navlink:hover{color:var(--text);}
+
+  /* ---- HERO: impostato come il cartiglio di una tavola tecnica ---- */
+  .hero{padding:64px 0 40px;}
+  .hero h1{
+    font-size:clamp(2.1rem, 5vw, 3.2rem); font-weight:700; letter-spacing:-.01em;
+    max-width:14ch; line-height:1.08;
+  }
+  .hero p.lead{
+    max-width:52ch; color:var(--text-dim); font-size:1.08rem; margin-top:18px;
+  }
+  .cta-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:32px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:13px 22px; border-radius:5px; font-weight:600; font-size:.96rem;
+    text-decoration:none; border:1px solid transparent; cursor:pointer;
+  }
+  .btn-primary{background:var(--amber); color:#1a1000;}
+  .btn-primary:hover{background:var(--amber-dark);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--cyan); color:var(--cyan);}
+
+  /* Cartiglio: striscia dati stile tavola Inventor */
+  .titleblock{
+    margin-top:44px; border:1px solid var(--line); border-radius:6px;
+    background:var(--panel); display:grid; grid-template-columns:repeat(4,1fr);
+  }
+  .titleblock div{padding:14px 18px; border-right:1px solid var(--line);}
+  .titleblock div:last-child{border-right:none;}
+  .titleblock .k{display:block; font-size:.72rem; color:var(--text-dim); letter-spacing:.02em; margin-bottom:4px;}
+  .titleblock .v{font-size:.92rem;}
+
+  section{padding:56px 0; border-top:1px solid var(--line);}
+  h2{font-size:1.6rem; font-weight:700; max-width:30ch;}
+  .section-lead{color:var(--text-dim); max-width:60ch; margin-top:10px; font-size:1rem;}
+
+  /* ---- Prima / Dopo: due mini-tavole affiancate ---- */
+  .compare{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:32px;}
+  .sheet{border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .sheet .tag{
+    padding:10px 16px; font-size:.78rem; font-weight:600;
+    border-bottom:1px solid var(--line);
+  }
+  .sheet.before .tag{background:#241a16; color:#e0a98a;}
+  .sheet.after .tag{background:#122a24; color:var(--ok);}
+  .sheet .body{padding:18px 16px; font-size:.94rem; color:var(--text-dim); background:var(--panel);}
+  .sheet .body b{color:var(--text); font-weight:600;}
+
+  /* ---- Funzionalità: righe di controllo, non card ---- */
+  .checklist{margin-top:28px; border-top:1px solid var(--line);}
+  .check-row{
+    display:grid; grid-template-columns:28px 1fr; gap:16px;
+    padding:18px 0; border-bottom:1px solid var(--line);
+  }
+  .check-row svg{width:18px; height:18px; margin-top:2px; stroke:var(--cyan); fill:none; stroke-width:1.6;}
+  .check-row h3{font-size:1rem; font-weight:600;}
+  .check-row p{color:var(--text-dim); font-size:.92rem; margin-top:4px; max-width:62ch;}
+
+  .req{display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;}
+  .req span{
+    border:1px solid var(--line); border-radius:4px; padding:7px 12px;
+    font-size:.85rem; color:var(--text-dim);
+  }
+
+  .support{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:28px;}
+  .support .card{
+    border:1px solid var(--line); border-radius:6px; padding:22px; background:var(--panel);
+  }
+  .support .card h3{font-size:1rem; margin-bottom:8px;}
+  .support .card p{color:var(--text-dim); font-size:.9rem; margin-bottom:16px;}
+
+  footer{padding:34px 0 50px; color:var(--text-dim); font-size:.85rem;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+  @media (max-width:640px){
+    .titleblock{grid-template-columns:1fr 1fr;}
+    .titleblock div:nth-child(2){border-right:none;}
+    .compare, .support{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="nav">
+    <div class="brand"><span class="dot"></span>InventorBatchPrint</div>
+    <nav>
+      <a class="navlink" href="#come-funziona">Come funziona</a>
+      <a class="navlink" href="#download">Download</a>
+      <a class="navlink" href="#supporta">Supporta</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <h1>Esporta tavole Inventor in batch, non una alla volta.</h1>
+  <p class="lead">Seleziona un assieme, spunta le tavole che ti servono, e lascia che PDF, DWG o stampa partano da soli — senza aprire e chiudere ogni disegno a mano.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="#download">Scarica InventorBatchPrint</a>
+    <a class="btn btn-ghost" href="#come-funziona">Come funziona</a>
+  </div>
+
+  <div class="titleblock mono">
+    <div><span class="k">TIPO</span><span class="v">Utility per Autodesk Inventor</span></div>
+    <div><span class="k">VERSIONE</span><span class="v js-version">1.1.0</span></div>
+    <div><span class="k">COMPATIBILITÀ</span><span class="v">Inventor 2024–2028</span></div>
+    <div><span class="k">PREZZO</span><span class="v">Gratuita</span></div>
+  </div>
+</div>
+
+<section class="wrap" id="come-funziona">
+  <h2>Il problema che risolve</h2>
+  <p class="section-lead">Chi lavora con assiemi grandi conosce il rito: aprire ogni tavola, esportare, chiudere, ripetere. InventorBatchPrint lo fa lui, su tutte le tavole che scegli, in un colpo solo.</p>
+  <div class="compare">
+    <div class="sheet before">
+      <div class="tag">PRIMA</div>
+      <div class="body">Apri ogni <b>.idw</b> uno per uno, esporti il PDF, chiudi, passi al successivo. Per un assieme da 40 tavole, è un pomeriggio.</div>
+    </div>
+    <div class="sheet after">
+      <div class="tag">DOPO</div>
+      <div class="body">Carichi l'assieme, spunti le tavole (o tutto l'assieme), premi <b>Esporta PDF</b>. Il resto succede da solo, con un riepilogo a fine lavoro.</div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Cosa fa, nel concreto</h2>
+  <div class="checklist">
+    <div class="check-row">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+      <div><h3>Export PDF e DWG in batch, o stampa diretta</h3><p>Scansiona l'assieme, mostra l'albero dei componenti e lancia l'esportazione o la stampa su tutte le tavole selezionate, in coda.</p></div>
+    </div>
+    <div class="check-row">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+      <div><h3>Trova i riferimenti mancanti prima di fallire</h3><p>Controlla l'intero albero dei riferimenti di ogni tavola — anche annidati — e ti dice esattamente quale file manca, invece di un errore generico.</p></div>
+    </div>
+    <div class="check-row">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+      <div><h3>Un batch non si ferma per un solo errore</h3><p>Se una tavola fallisce, il resto continua da solo. Un riepilogo unico a fine lavoro ti dice cosa è andato bene e cosa no.</p></div>
+    </div>
+    <div class="check-row">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+      <div><h3>Ricerca, filtri e preset</h3><p>Cerca un componente ovunque sia annidato, filtra per tipo, e salva le combinazioni di filtri che usi più spesso.</p></div>
+    </div>
+    <div class="check-row">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+      <div><h3>Tema chiaro o scuro, log persistente</h3><p>Si adatta a come preferisci lavorare, e tiene un registro su disco di ogni sessione — utile se un problema salta fuori solo dopo.</p></div>
+    </div>
+  </div>
+
+  <div class="req">
+    <span class="mono">Windows 10/11 (x64)</span>
+    <span class="mono">Autodesk Inventor 2024–2028</span>
+    <span class="mono">Nessuna installazione .NET richiesta</span>
+  </div>
+</section>
+
+<section class="wrap" id="download">
+  <h2>Download</h2>
+  <p class="section-lead">Un unico installer. Nessun account, nessuna registrazione.</p>
+  <div class="cta-row">
+    <!-- SOSTITUISCI TUONOME con il tuo nome utente GitHub. "releases/latest" non cambia mai:
+         mostra sempre l'ultima versione caricata. -->
+    <a class="btn btn-primary" href="https://github.com/TUONOME/inventorbatchprint/releases/latest">Scarica per Windows (.exe)</a>
+  </div>
+</section>
+
+<section class="wrap" id="supporta">
+  <h2>Ti è utile? Offrimi un caffè</h2>
+  <p class="section-lead">InventorBatchPrint è gratuito e lo resterà. Se ti fa risparmiare tempo, un piccolo supporto è sempre apprezzato — non è richiesto per usarla.</p>
+  <div class="support">
+    <div class="card">
+      <h3>PayPal</h3>
+      <p>Una donazione diretta, di qualsiasi importo.</p>
+      <!-- SOSTITUISCI con il tuo link PayPal.me reale, es. https://paypal.me/tuonome -->
+      <a class="btn btn-ghost" href="#">Dona con PayPal</a>
+    </div>
+    <div class="card">
+      <h3>Buy Me a Coffee</h3>
+      <p>Un caffè, o più di uno, quando ti va.</p>
+      <!-- SOSTITUISCI con il tuo link reale, es. https://buymeacoffee.com/tuonome -->
+      <a class="btn btn-ghost" href="#">Offrimi un caffè</a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <span>InventorBatchPrint · v<span class="js-version">1.1.0</span></span>
+  <span>Fatta da un ingegnere per chi passa le giornate dentro Inventor.</span>
+  <span style="width:100%">Software gratuito, non affiliato né approvato da Autodesk. Autodesk e Inventor sono marchi di Autodesk, Inc.</span>
+</footer>
+
+<script>
+  // Legge version.json (stesso sito) e aggiorna i numeri di versione mostrati nella pagina, così
+  // basta aggiornare quel file a ogni release. Se non è raggiungibile (es. pagina aperta da disco)
+  // restano i valori scritti nell'HTML.
+  fetch('version.json', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (d) {
+      if (d && d.version) {
+        document.querySelectorAll('.js-version').forEach(function (el) { el.textContent = d.version; });
+      }
+    })
+    .catch(function () {});
+</script>
+</body>
+</html>
