@@ -4,8 +4,8 @@
 
 **EN** — Batch export of Autodesk Inventor drawings to PDF/DWG (or print) straight from an assembly tree. Free Windows tool.
 
-**Sito / Website:** https://Burazz99.github.io/inventorbatchprint/
-**Download:** [Ultima versione / Latest release](https://github.com/Burazz99/inventorbatchprint/releases/latest)
+**Sito / Website:** https://Burazz99.github.io/Inventorbatchprint/
+**Download:** [Ultima versione / Latest release](https://github.com/Burazz99/Inventorbatchprint/releases/latest)
 
 ## Cosa fa / What it does
 
